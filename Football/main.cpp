@@ -5,6 +5,7 @@
 #include<iostream>
 #include <chrono>
 #include<cmath>
+#include<thread>
 
 
 using namespace sf;
@@ -12,10 +13,14 @@ enum Directions
 {
 	right, left, up, down
 };
+class Coordinates
+{public:
+	float x, y;
+};
 class Player
 {
 private:
-	float x, y = 0;
+	Coordinates main;
 
 public:
 	int playerscore;
@@ -34,21 +39,18 @@ public:
 	{
 		playerscore = 0;
 		File = FIle;
-		this->x = x, this->y = y, this->h = h, this->w = w;
+		main.x = x, main.y = y, this->h = h, this->w = w;
 		img.loadFromFile("images/" + File);
 		img.createMaskFromColor(Color(41, 33, 59));
 		texture.loadFromImage(img);
 		spr.setTexture(texture);
-		spr.setTextureRect(IntRect(this->x, this->y, this->w, this->h));
+		spr.setTextureRect(IntRect(main.x, main.y, this->w, this->h));
 	}
-	float getPlayerCoordinateX()
+	Coordinates getPlayerCoordinates()
 	{
-		return x;
+		return main;
 	}
-	float getPlayerCoordinateY()
-	{
-		return y;
-	}
+	
 	void update(float time)
 	{
 		
@@ -64,42 +66,42 @@ public:
 			dx = 0, dy = speed; break;
 
 		}
-		x += dx * time;
-		y += dy * time;
+		main.x += dx * time;
+		main.y += dy * time;
 		speed = 0;
-		spr.setPosition(x, y);
+		spr.setPosition(main.x, main.y);
 		interactionWithMap();
 	}
 	void interactionWithMap()
 	{
-		for (int i = y / 32; i < (y + h) / 32; i++)
+		for (int i = main.y / 32; i < (main.y + h) / 32; i++)
 		{
-			for (int j = x / 32; j < (x + w) / 32; j++)
+			for (int j = main.x / 32; j < (main.x + w) / 32; j++)
 			{
 				if (TileMap[i][j] == '0')
 				{
 					if (dy > 0)
 					{
-						y = i * 32 - h;
+						main.y = i * 32 - h;
 
 					}
 					if (dy < 0)
 					{
-						y = i * 32 + 32;
+						main.y = i * 32 + 32;
 
 					}
 					if (dx > 0)
 					{
-						x = j * 32 - w;
+						main.x = j * 32 - w;
 
 					}
 					if (dx < 0)
 					{
-						x = j * 32 + 32;
+						main.x = j * 32 + 32;
 
 					}
 				}
-
+				
 				if (TileMap[i][j] == 's')
 				{
 					playerscore++;
@@ -121,6 +123,35 @@ public:
 				}
 			}
 		}
+		for (int i = main.y / 32; i < (main.y + h) / 32; i++)
+		{
+			for (int j = main.x / 32 ;j < (main.x + w) / 32; j++)
+			{
+				if (TileMap[i][j] == 'w')
+				{
+					if (dy > 0)
+					{
+						main.y = i * 32 - h;
+
+					}
+					if (dy < 0)
+					{
+						main.y = i * 32 + 32;
+
+					}
+					if (dx > 0)
+					{
+						main.x = j * 32 - w;
+
+					}
+					if (dx < 0)
+					{
+						main.x = j * 32 + 32;
+
+					}
+				}
+			}
+		}
 	}
 private:
 
@@ -128,39 +159,39 @@ private:
 class Ball
 {
 private:
-	float x, y = 0;
+	Coordinates main;
+	float CurrentFrameX = 0;
+	float sped_anim = 0.02;
 public:
 	bool isfree = true;
 	float w, h, dx, dy, speed = 0;
+	
 	int dir = 0;
 	String File;
 	Image img;
 	Texture texture;
 	Sprite spr;
-	float getCoordinateX()
+	Coordinates getCoordinates()
 	{
-		return x;
+		return main;
 	}
-	float getCoordinateY()
-	{
-		return y;
-	}
+	
 
 	Ball(String FIle, int x, int y, float h, float w)
 	{
 
 		File = FIle;
-		this->x = x, this->y = y, this->h = h, this->w = w;
+		main.x = x, main.y = y, this->h = h, this->w = w;
 		img.loadFromFile("images/ball/" + File);
 
 		texture.loadFromImage(img);
 		spr.setTexture(texture);
-		spr.setTextureRect(IntRect(this->x, this->y, this->w, this->h));
+		spr.setTextureRect(IntRect(main.x, main.y, this->w, this->h));
 	}
 	void set_position(float x, float y)
 	{
-		this->x = x;
-		this->y = y;
+		main.x = x;
+		main.y = y;
 	}
 	void update(float time, float p_x, float p_y, float p_dx, float p_dy, float speed)
 	{
@@ -178,82 +209,83 @@ public:
 			dx = 0, dy = this->speed; break;
 
 		}
-		x += dx * time;
-		y += dy * time;
+		main.x += dx * time;
+		main.y += dy * time;
 		this->speed = 0;
 
-		spr.setPosition(x, y);
+		spr.setPosition(main.x, main.y);
 
 		ball_physics(time, p_x, p_y, p_dx, p_dy, speed);
 
 		}
 		else
 		{
+			
 			if (p_dy > 0)
 			{
 				dir = down;
-				y = p_y+85;
-				x = p_x+32;
+				main.y = p_y+85;
+				main.x = p_x+32;
 			}
 			if (p_dy < 0)
 			{
 				dir = up;
 				
-				y = p_y- 15;
-				x = p_x + 32;
+				main.y = p_y- 15;
+				main.x = p_x + 32;
 			}
 			if (p_dx > 0)
 			{
 				dir = left;
-				y = p_y + 60;
-				x = p_x + 70;
+				main.y = p_y + 60;
+				main.x = p_x + 70;
 			}
 			if (p_dx < 0)
 			{
 				dir = left;
-				y = p_y + 60;
-				x = p_x - 10;
+				main.y = p_y + 60;
+				main.x = p_x - 10;
 			}
 			
 			
 			
-			spr.setPosition(x ,y);
+			spr.setPosition(main.x , main.y);
 		}
 
 	}
 	void ball_physics(float time, float p_x, float p_y, float p_dx, float p_dy, float speed)
 	{
 
-		for (int i = y / 32; i < (y + h) / 32; i++)
+		for (int i = main.y / 32; i < (main.y + h) / 32; i++)
 		{
-			for (int j = x / 32; j < (x + w) / 32; j++)
+			for (int j = main.x / 32; j < (main.x + w) / 32; j++)
 			{
-				if (TileMap[i][j] == '0')
+				if (TileMap[i][j] == '0'|| TileMap[i][j] == 'w')
 				{
 					if (dy > 0)
 					{
-						y = i * 32 - h * 3;
+						main.y = i * 32 - h;
 
 					}
 					if (dy < 0)
 					{
-						y = i * 32 + 32 * 3;
+						main.y = i * 32 + 32 ;
 
 					}
 					if (dx > 0)
 					{
-						x = j * 32 - w * 3;
+						main.x = j * 32 - w;
 
 					}
 					if (dx < 0)
 					{
-						x = j * 32 + 32 * 3;
+						main.x = j * 32 + 32 ;
 
 					}
 				}
 			}
 		}
-		if (abs((x - 30) - (p_x)) < 35 &&abs(((y - 35) - (p_y))) < 45)
+		if (abs((main.x - 30) - (p_x)) < 35 &&abs(((main.y - 35) - (p_y))) < 45)
 		{
 
 
@@ -261,30 +293,50 @@ public:
 			{
 
 				dir = down;
-				y += dy * speed * time;
-
+				main.y += dy * speed * time;
+				CurrentFrameX += sped_anim * time;
+				if (CurrentFrameX > 3)
+				{
+					CurrentFrameX = 0;
+				}
+				spr.setTextureRect(IntRect(32 * int(CurrentFrameX) , 0, 32 , 32));
 			}
 			if (p_dy < 0)
 			{
 				dir = up;
-				y += dy * speed * time;
+				main.y += dy * speed * time;
 
-
+				CurrentFrameX += sped_anim * time;
+				if (CurrentFrameX > 3)
+				{
+					CurrentFrameX = 0;
+				}
+				spr.setTextureRect(IntRect(32 * int(CurrentFrameX), 0, 32, 32));
 
 			}
 			if (p_dx > 0)
 			{
 				dir = right;
-				x += speed * time;
+				main.x += speed * time;
 
-
+				CurrentFrameX += sped_anim * time;
+				if (CurrentFrameX > 3)
+				{
+					CurrentFrameX = 0;
+				}
+				spr.setTextureRect(IntRect(32 * int(CurrentFrameX), 0, 32, 32));
 			}
 			if (p_dx < 0)
 			{
 				dir = left;
 
-				x += dx * speed * time;
-
+				main.x += dx * speed * time;
+				CurrentFrameX += sped_anim * time;
+				if (CurrentFrameX > 3)
+				{
+					CurrentFrameX = 0;
+				}
+				spr.setTextureRect(IntRect(32 * int(CurrentFrameX), 0, 32, 32));
 			}
 
 			this->speed = speed;
@@ -371,9 +423,6 @@ public:
 	}
 	void move(float time,Ball& ball)
 	{
-		
-
-
 			if (check_s == 1)
 			{
 				end = std::chrono::high_resolution_clock::now();
@@ -384,7 +433,6 @@ public:
 					check_s = 0;
 				}
 			}
-
 			if (Keyboard::isKeyPressed(Keyboard::A))
 			{
 				p.dir = left; p.speed = speed;
@@ -394,7 +442,7 @@ public:
 					CurrentFrameX = 0;
 				}
 				p.spr.setTextureRect(IntRect(left_anim_x * int(CurrentFrameX) + left_anim_x_rev, left_anim_y, left_rev_num * p.h, p.w));
-				getPlayerCoordinatesForView(p.getPlayerCoordinateX(), p.getPlayerCoordinateY());
+				getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y);
 				
 
 			}
@@ -407,7 +455,7 @@ public:
 					CurrentFrameX = 0;
 				}
 				p.spr.setTextureRect(IntRect(right_anim_x * int(CurrentFrameX) + right_anim_x_rev, right_anim_y, right_rev_num * p.h, p.w));
-				getPlayerCoordinatesForView(p.getPlayerCoordinateX(), p.getPlayerCoordinateY());
+				getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y);
 			}
 			if (Keyboard::isKeyPressed(Keyboard::W))
 			{
@@ -418,7 +466,7 @@ public:
 					CurrentFrameX = 0;
 				}
 				p.spr.setTextureRect(IntRect(up_anim_x * int(CurrentFrameX), up_anim_y + up_anim_y_rev, p.h, p.w * up_rev_num));
-				getPlayerCoordinatesForView(p.getPlayerCoordinateX(), p.getPlayerCoordinateY());
+				getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y);
 			}
 			if (Keyboard::isKeyPressed(Keyboard::S))
 			{
@@ -429,7 +477,7 @@ public:
 					CurrentFrameX = 0;
 				}
 				p.spr.setTextureRect(IntRect(down_anim_x * int(CurrentFrameX), down_anim_y + down_anim_y_rev, p.h, p.w * down_rev_num));
-				getPlayerCoordinatesForView(p.getPlayerCoordinateX(), p.getPlayerCoordinateY());
+				getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y);
 			}
 			if (Keyboard::isKeyPressed(Keyboard::LShift))
 			{
@@ -445,53 +493,49 @@ public:
 			}
 			if (Keyboard::isKeyPressed(Keyboard::E))
 			{
-				std::cout << "pX= " << p.getPlayerCoordinateX() << std::endl;
 				
-				std::cout << "bX= " << ball.getCoordinateX() << std::endl;
-				std::cout << "pY= " << p.getPlayerCoordinateY() << std::endl;
-				std::cout << "bY= " << ball.getCoordinateY() << std::endl;
 				if(ball.isfree)
 				{ 
 
 				switch (p.dir)
 				{
 				case right:
-					if (p.getPlayerCoordinateX()<ball.getCoordinateX()&& p.getPlayerCoordinateX()+150 > ball.getCoordinateX()&&abs(p.getPlayerCoordinateY()+50 - ball.getCoordinateY())<=64)
+					if (p.getPlayerCoordinates().x<ball.getCoordinates().x&& p.getPlayerCoordinates().x+150 > ball.getCoordinates().x&&abs(p.getPlayerCoordinates().y+50 - ball.getCoordinates().y)<=64)
 					{
 						if (ball.isfree)
 						{
 							ball.isfree = false;
-
+							isgrabbed = true;
 						}
 					}
 					break;
 				case left:
-					if (p.getPlayerCoordinateX() > ball.getCoordinateX() && p.getPlayerCoordinateX() - 150 <ball.getCoordinateX() && abs(p.getPlayerCoordinateY() + 50 - ball.getCoordinateY()) <= 64)
+					if (p.getPlayerCoordinates().x > ball.getCoordinates().x && p.getPlayerCoordinates().x - 150 <ball.getCoordinates().x && abs(p.getPlayerCoordinates().y + 50 - ball.getCoordinates().y) <= 64)
 					{
 						if (ball.isfree)
 						{
 							ball.isfree = false;
-
+							isgrabbed = true;
 						}
 					}
 					break;
 				case up:
-					if (p.getPlayerCoordinateY() > ball.getCoordinateY()  && p.getPlayerCoordinateY() - 100 < ball.getCoordinateY() && abs(p.getPlayerCoordinateX() - ball.getCoordinateX()) <= 80)
+					if (p.getPlayerCoordinates().y > ball.getCoordinates().y  && p.getPlayerCoordinates().y - 100 < ball.getCoordinates().y && abs(p.getPlayerCoordinates().x - ball.getCoordinates().x) <= 80)
 					{
 						if (ball.isfree)
 						{
 							ball.isfree = false;
-
+							isgrabbed = true;
 						}
 					}
 					break;
 				case down:
-					if (p.getPlayerCoordinateY() < ball.getCoordinateY()  && p.getPlayerCoordinateY() + 100 > ball.getCoordinateY() && abs(p.getPlayerCoordinateX() - ball.getCoordinateX()) <= 80)
+					if (p.getPlayerCoordinates().y < ball.getCoordinates().y  && p.getPlayerCoordinates().y + 100 > ball.getCoordinates().y && abs(p.getPlayerCoordinates().x - ball.getCoordinates().x) <= 80)
 					{
 						if (ball.isfree)
 						{
 							ball.isfree = false;
-
+							isgrabbed = true;
 						}
 					}
 					break;
@@ -503,12 +547,63 @@ public:
 				{
 					
 						ball.isfree = true;
-					
+						isgrabbed = false;
 				}
 				
 				
 
 			}
+			if (Keyboard::isKeyPressed(Keyboard::Q))
+			{
+				
+					if (isgrabbed)
+				{
+
+					switch (p.dir)
+					{
+					case right:
+
+							ball.isfree = true;
+							ball.set_position(p.getPlayerCoordinates().x + 200 , p.getPlayerCoordinates().y + 60);
+							if (ball.getCoordinates().x <= 22) { ball.set_position(30, ball.getCoordinates().y); }
+							if (ball.getCoordinates().x > 1510) { ball.set_position(1490, ball.getCoordinates().y); }
+							if (ball.getCoordinates().y < 17) { ball.set_position(ball.getCoordinates().x, 32); }
+							if (ball.getCoordinates().y > 629) { ball.set_position(ball.getCoordinates().x, 605); }
+							
+							break;
+					case left:
+
+						ball.isfree = true;
+						ball.set_position(p.getPlayerCoordinates().x - 150, p.getPlayerCoordinates().y + 60);
+						if (ball.getCoordinates().x <= 22) { ball.set_position(30, ball.getCoordinates().y); }
+						if (ball.getCoordinates().x > 1510) { ball.set_position(1490, ball.getCoordinates().y); }
+						if (ball.getCoordinates().y < 17) { ball.set_position(ball.getCoordinates().x, 32); }
+						if (ball.getCoordinates().y > 629) { ball.set_position(ball.getCoordinates().x, 605); }
+						break;
+					case up:
+						ball.isfree = true;
+						ball.set_position(p.getPlayerCoordinates().x+35 , p.getPlayerCoordinates().y - 120);
+						if (ball.getCoordinates().x <= 22) { ball.set_position(30, ball.getCoordinates().y); }
+						if (ball.getCoordinates().x > 1510) { ball.set_position(1490, ball.getCoordinates().y); }
+						if (ball.getCoordinates().y < 17) { ball.set_position(ball.getCoordinates().x, 32); }
+						if (ball.getCoordinates().y > 629) { ball.set_position(ball.getCoordinates().x, 605); }
+						break;
+					case down:
+						ball.isfree = true;
+						ball.set_position(p.getPlayerCoordinates().x + 35, p.getPlayerCoordinates().y + 220);
+						if (ball.getCoordinates().x <= 22) { ball.set_position(30, ball.getCoordinates().y); }
+						if (ball.getCoordinates().x > 1510) { ball.set_position(1490, ball.getCoordinates().y); }
+						if (ball.getCoordinates().y < 17) { ball.set_position(ball.getCoordinates().x, 32); }
+						if (ball.getCoordinates().y > 629) { ball.set_position(ball.getCoordinates().x, 605); }
+						break;
+					default:
+						break;
+					}
+					isgrabbed = false;
+				}
+				
+			}
+			
 			p.update(time);
 		
 	}
@@ -559,9 +654,16 @@ public:
 		{
 			for (int j = 0; j < WIDTH_MAP; j++)
 			{
-				if (TileMap[i][j] == ' ')  spr_map.setTextureRect(IntRect(160, 0, 32, 32));
+				if (TileMap[i][j] == ' ')  spr_map.setTextureRect(IntRect(162, 0, 32, 32));
 				if (TileMap[i][j] == 's') spr_map.setTextureRect(IntRect(32, 0, 32, 32));
 				if (TileMap[i][j] == '0')spr_map.setTextureRect(IntRect(64, 0, 32, 32));
+				if (TileMap[i][j] == 'i')spr_map.setTextureRect(IntRect(195, 0, 32, 32));
+				if (TileMap[i][j] == 'j')spr_map.setTextureRect(IntRect(228, 0, -32, 32));
+				if (TileMap[i][j] == 'b')spr_map.setTextureRect(IntRect(259, 0, 32, 32));
+				if (TileMap[i][j] == 'k')spr_map.setTextureRect(IntRect(291, 0, -32, 32));
+				if (TileMap[i][j] == '|')spr_map.setTextureRect(IntRect(228, 0, 32, 32));
+				if (TileMap[i][j] == 'l')spr_map.setTextureRect(IntRect(260, 0, -32, 32));
+				if (TileMap[i][j] == 'w')spr_map.setTextureRect(IntRect(291, 0, 32, 32));
 				spr_map.setPosition(j * 32, i * 32);
 				wind.draw(spr_map);
 			}
@@ -626,7 +728,7 @@ int main()
 		std::string s = std::to_string(hero.get_score());
 		text.setString(s);
 		text.setPosition(view.getCenter().x - 270, view.getCenter().y + 250);
-		ball.update(time, hero.p.getPlayerCoordinateX(), hero.p.getPlayerCoordinateY(), hero.p.dx, hero.p.dy, hero.get_speed());
+		ball.update(time, hero.p.getPlayerCoordinates().x, hero.p.getPlayerCoordinates().y, hero.p.dx, hero.p.dy, hero.get_speed());
 		wind.draw(text);
 		
 		

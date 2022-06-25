@@ -6,9 +6,9 @@ View getPlayerCoordinatesForView(float x, float y)
 {
 	float tempX = x, tempY = y;
 	if (x < 400)tempX = 400;
-	if (x > 880) tempX = 880;
+	if (x > 1170) tempX = 1170;
 	if (y < 300)tempY = 300;
-	if (y > 495)tempY = 495;
+	if (y > 370)tempY = 370;
 	view.setCenter(tempX, tempY);
 	return view;
 }
