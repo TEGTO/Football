@@ -21,11 +21,10 @@ class Player
 {
 private:
 	Coordinates main;
-
+	Coordinates default_position;
 public:
-	int playerscore;
 	float w, h, dx, dy, speed = 0;
-	int dir = 0, health;
+	int dir = 0, health=20;
 	bool isalive;
 	String File;
 	Image img;
@@ -35,9 +34,23 @@ public:
 	{
 
 	}
+	void setPosition(float x, float y)
+	{
+		main.x = x;
+		main.y = y;
+	}
+	void setDefaultCoordinates(float x, float y)
+	{
+		default_position.x = x;
+		default_position.y = y;
+	}
+	Coordinates getDefaultCoordinates()
+	{
+		return default_position;
+	}
 	void set_par(String FIle, int x, int y, float h, float w)
 	{
-		playerscore = 0;
+		
 		File = FIle;
 		main.x = x, main.y = y, this->h = h, this->w = w;
 		img.loadFromFile("images/" + File);
@@ -102,18 +115,8 @@ public:
 					}
 				}
 				
-				if (TileMap[i][j] == 's')
-				{
-					playerscore++;
-					TileMap[i][j] = ' ';
-
-				}
-				if (TileMap[i][j] == 'c')
-				{
-					health += 50;
-					TileMap[i][j] = ' ';
-
-				}
+				
+				
 				if (TileMap[i][j] == 'p')
 				{
 					health -= 50;
@@ -159,10 +162,25 @@ private:
 class Ball
 {
 private:
-	Coordinates main;
+	
 	float CurrentFrameX = 0;
 	float sped_anim = 0.02;
+	Coordinates default_position;
+	Coordinates main;
+	void animations(float time)
+	{
+		CurrentFrameX += sped_anim * time;
+		if (CurrentFrameX > 3)
+		{
+			CurrentFrameX = 0;
+		}
+		spr.setTextureRect(IntRect(32 * int(CurrentFrameX), 0, 32, 32));
+	}
 public:
+	void setSpeedAnim(float speed)
+	{
+		this->sped_anim = speed;
+	}
 	bool isfree = true;
 	float w, h, dx, dy, speed = 0;
 	
@@ -175,8 +193,15 @@ public:
 	{
 		return main;
 	}
-	
-
+	void setDefaultCoordinates(float x, float y)
+	{
+		default_position.x = x;
+		default_position.y = y;
+	}
+	Coordinates getDefaultCoordinates()
+	{
+		return default_position;
+	}
 	Ball(String FIle, int x, int y, float h, float w)
 	{
 
@@ -193,8 +218,9 @@ public:
 		main.x = x;
 		main.y = y;
 	}
-	void update(float time, float p_x, float p_y, float p_dx, float p_dy, float speed)
+	void update(float time, float p_x, float p_y, float p_dx, float p_dy, float speed,bool isgrabbed)
 	{
+		
 		if(isfree)
 		{ 
 		switch (dir)
@@ -220,36 +246,44 @@ public:
 		}
 		else
 		{
-			
-			if (p_dy > 0)
+			if (isgrabbed)
 			{
-				dir = down;
-				main.y = p_y+85;
-				main.x = p_x+32;
+				if (p_dy > 0)
+				{
+					dir = down;
+					main.y = p_y + 85;
+					main.x = p_x + 32;
+					animations(time);
+				}
+				if (p_dy < 0)
+				{
+					dir = up;
+
+					main.y = p_y - 15;
+					main.x = p_x + 32;
+					animations(time);
+
+				}
+				if (p_dx > 0)
+				{
+					dir = left;
+					main.y = p_y + 60;
+					main.x = p_x + 70;
+					animations(time);
+				}
+				if (p_dx < 0)
+				{
+					dir = left;
+					main.y = p_y + 60;
+					main.x = p_x - 10;
+					animations(time);
+				}
+
+				spr.setPosition(main.x, main.y);
 			}
-			if (p_dy < 0)
-			{
-				dir = up;
-				
-				main.y = p_y- 15;
-				main.x = p_x + 32;
-			}
-			if (p_dx > 0)
-			{
-				dir = left;
-				main.y = p_y + 60;
-				main.x = p_x + 70;
-			}
-			if (p_dx < 0)
-			{
-				dir = left;
-				main.y = p_y + 60;
-				main.x = p_x - 10;
-			}
+		
 			
 			
-			
-			spr.setPosition(main.x , main.y);
 		}
 
 	}
@@ -264,22 +298,22 @@ public:
 				{
 					if (dy > 0)
 					{
-						main.y = i * 32 - h;
+						main.y = i * 32 - h*3;
 
 					}
 					if (dy < 0)
 					{
-						main.y = i * 32 + 32 ;
+						main.y = i * 32 + 32*3 ;
 
 					}
 					if (dx > 0)
 					{
-						main.x = j * 32 - w;
+						main.x = j * 32 - w*3;
 
 					}
 					if (dx < 0)
 					{
-						main.x = j * 32 + 32 ;
+						main.x = j * 32 + 32 *3;
 
 					}
 				}
@@ -294,24 +328,14 @@ public:
 
 				dir = down;
 				main.y += dy * speed * time;
-				CurrentFrameX += sped_anim * time;
-				if (CurrentFrameX > 3)
-				{
-					CurrentFrameX = 0;
-				}
-				spr.setTextureRect(IntRect(32 * int(CurrentFrameX) , 0, 32 , 32));
+				animations(time);
 			}
 			if (p_dy < 0)
 			{
 				dir = up;
 				main.y += dy * speed * time;
 
-				CurrentFrameX += sped_anim * time;
-				if (CurrentFrameX > 3)
-				{
-					CurrentFrameX = 0;
-				}
-				spr.setTextureRect(IntRect(32 * int(CurrentFrameX), 0, 32, 32));
+				animations(time);
 
 			}
 			if (p_dx > 0)
@@ -319,24 +343,14 @@ public:
 				dir = right;
 				main.x += speed * time;
 
-				CurrentFrameX += sped_anim * time;
-				if (CurrentFrameX > 3)
-				{
-					CurrentFrameX = 0;
-				}
-				spr.setTextureRect(IntRect(32 * int(CurrentFrameX), 0, 32, 32));
+				animations(time);
 			}
 			if (p_dx < 0)
 			{
 				dir = left;
 
 				main.x += dx * speed * time;
-				CurrentFrameX += sped_anim * time;
-				if (CurrentFrameX > 3)
-				{
-					CurrentFrameX = 0;
-				}
-				spr.setTextureRect(IntRect(32 * int(CurrentFrameX), 0, 32, 32));
+				animations(time);
 			}
 
 			this->speed = speed;
@@ -346,7 +360,7 @@ public:
 class Character
 {
 public:
-	Character(String FIle, int x, int y, float h, float w, int CurrentFrameMax, double speed, float left_anim_x, float right_anim_x, float up_anim_x, float down_anim_x, float left_anim_y, float right_anim_y, float up_anim_y, float down_anim_y)
+	Character(String FIle, int x, int y, float h, float w, int CurrentFrameMax, double speed, float left_anim_x, float right_anim_x, float up_anim_x, float down_anim_x, float left_anim_y, float right_anim_y, float up_anim_y, float down_anim_y,int type)
 	{
 		p.set_par(FIle, x, y, h, w);
 		this->CurrentFrameMax = CurrentFrameMax;
@@ -359,6 +373,7 @@ public:
 		this->left_anim_y = left_anim_y;
 		this->up_anim_y = up_anim_y;
 		this->down_anim_y = down_anim_y;
+		this->type = type;
 	}
 	
 	void set_speed(double speed)
@@ -423,200 +438,404 @@ public:
 	}
 	void move(float time,Ball& ball)
 	{
-			if (check_s == 1)
-			{
-				end = std::chrono::high_resolution_clock::now();
-				std::chrono::duration<float> dur = end - start;
-				if (dur.count() > 3.0)
+		switch (type)
+		{
+		case 1:
+				if (check_s == 1)
 				{
-					speed = s_ordinary;
-					check_s = 0;
-				}
-			}
-			if (Keyboard::isKeyPressed(Keyboard::A))
-			{
-				p.dir = left; p.speed = speed;
-				CurrentFrameX += speed_anim * time;
-				if (CurrentFrameX > CurrentFrameMax)
-				{
-					CurrentFrameX = 0;
-				}
-				p.spr.setTextureRect(IntRect(left_anim_x * int(CurrentFrameX) + left_anim_x_rev, left_anim_y, left_rev_num * p.h, p.w));
-				getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y);
-				
-
-			}
-			if (Keyboard::isKeyPressed(Keyboard::D))
-			{
-				p.dir = right; p.speed = speed;
-				CurrentFrameX += speed_anim * time;
-				if (CurrentFrameX > CurrentFrameMax)
-				{
-					CurrentFrameX = 0;
-				}
-				p.spr.setTextureRect(IntRect(right_anim_x * int(CurrentFrameX) + right_anim_x_rev, right_anim_y, right_rev_num * p.h, p.w));
-				getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y);
-			}
-			if (Keyboard::isKeyPressed(Keyboard::W))
-			{
-				p.dir = up; p.speed = speed;
-				CurrentFrameX += speed_anim * time;
-				if (CurrentFrameX > CurrentFrameMax)
-				{
-					CurrentFrameX = 0;
-				}
-				p.spr.setTextureRect(IntRect(up_anim_x * int(CurrentFrameX), up_anim_y + up_anim_y_rev, p.h, p.w * up_rev_num));
-				getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y);
-			}
-			if (Keyboard::isKeyPressed(Keyboard::S))
-			{
-				p.dir = down; p.speed = speed;
-				CurrentFrameX += speed_anim * time;
-				if (CurrentFrameX > CurrentFrameMax)
-				{
-					CurrentFrameX = 0;
-				}
-				p.spr.setTextureRect(IntRect(down_anim_x * int(CurrentFrameX), down_anim_y + down_anim_y_rev, p.h, p.w * down_rev_num));
-				getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y);
-			}
-			if (Keyboard::isKeyPressed(Keyboard::LShift))
-			{
-
-				if (check_s == 0)
-				{
-					s_ordinary = speed;
-					speed += 0.15;
-					check_s = 1;
-					start = std::chrono::high_resolution_clock::now();
-				}
-
-			}
-			if (Keyboard::isKeyPressed(Keyboard::E))
-			{
-				
-				if(ball.isfree)
-				{ 
-
-				switch (p.dir)
-				{
-				case right:
-					if (p.getPlayerCoordinates().x<ball.getCoordinates().x&& p.getPlayerCoordinates().x+150 > ball.getCoordinates().x&&abs(p.getPlayerCoordinates().y+50 - ball.getCoordinates().y)<=64)
+					end = std::chrono::high_resolution_clock::now();
+					std::chrono::duration<float> dur = end - start;
+					if (dur.count() > 3.0)
 					{
-						if (ball.isfree)
+						speed = s_ordinary;
+						check_s = 0;
+						ball.setSpeedAnim(0.02);
+						speed_anim = 0.005;
+					}
+				}
+				if (Keyboard::isKeyPressed(Keyboard::A))
+				{
+					p.dir = left; p.speed = speed;
+					CurrentFrameX += speed_anim * time;
+					if (CurrentFrameX > CurrentFrameMax){CurrentFrameX = 0;}
+					p.spr.setTextureRect(IntRect(left_anim_x * int(CurrentFrameX) + left_anim_x_rev, left_anim_y, left_rev_num * p.h, p.w));
+					getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y);
+				}
+				if (Keyboard::isKeyPressed(Keyboard::D))
+				{
+					p.dir = right; p.speed = speed;
+					CurrentFrameX += speed_anim * time;
+					if (CurrentFrameX > CurrentFrameMax)
+					{
+						CurrentFrameX = 0;
+					}
+					p.spr.setTextureRect(IntRect(right_anim_x * int(CurrentFrameX) + right_anim_x_rev, right_anim_y, right_rev_num * p.h, p.w));
+					getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y);
+				}
+				if (Keyboard::isKeyPressed(Keyboard::W))
+				{
+					p.dir = up; p.speed = speed;
+					CurrentFrameX += speed_anim * time;
+					if (CurrentFrameX > CurrentFrameMax)
+					{
+						CurrentFrameX = 0;
+					}
+					p.spr.setTextureRect(IntRect(up_anim_x * int(CurrentFrameX), up_anim_y + up_anim_y_rev, p.h, p.w * up_rev_num));
+					getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y);
+				}
+				if (Keyboard::isKeyPressed(Keyboard::S))
+				{
+					p.dir = down; p.speed = speed;
+					CurrentFrameX += speed_anim * time;
+					if (CurrentFrameX > CurrentFrameMax)
+					{
+						CurrentFrameX = 0;
+					}
+					p.spr.setTextureRect(IntRect(down_anim_x * int(CurrentFrameX), down_anim_y + down_anim_y_rev, p.h, p.w * down_rev_num));
+					getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y);
+				}
+				if (Keyboard::isKeyPressed(Keyboard::LShift))
+				{
+
+					if (check_s == 0)
+					{
+						s_ordinary = speed;
+						speed += 0.15;
+						check_s = 1;
+						start = std::chrono::high_resolution_clock::now();
+						ball.setSpeedAnim(0.03);
+						speed_anim = 0.01;
+					}
+
+				}
+				if (Keyboard::isKeyPressed(Keyboard::E))
+				{
+
+					if (ball.isfree)
+					{
+
+						switch (p.dir)
 						{
-							ball.isfree = false;
-							isgrabbed = true;
+						case right:
+							if (p.getPlayerCoordinates().x<ball.getCoordinates().x && p.getPlayerCoordinates().x + 150 > ball.getCoordinates().x && abs(p.getPlayerCoordinates().y + 50 - ball.getCoordinates().y) <= 64)
+							{
+								if (ball.isfree)
+								{
+									ball.isfree = false;
+									isgrabbed = true;
+								}
+							}
+							break;
+						case left:
+							if (p.getPlayerCoordinates().x > ball.getCoordinates().x && p.getPlayerCoordinates().x - 150 < ball.getCoordinates().x && abs(p.getPlayerCoordinates().y + 50 - ball.getCoordinates().y) <= 64)
+							{
+								if (ball.isfree)
+								{
+									ball.isfree = false;
+									isgrabbed = true;
+								}
+							}
+							break;
+						case up:
+							if (p.getPlayerCoordinates().y > ball.getCoordinates().y && p.getPlayerCoordinates().y - 100 < ball.getCoordinates().y && abs(p.getPlayerCoordinates().x - ball.getCoordinates().x) <= 80)
+							{
+								if (ball.isfree)
+								{
+									ball.isfree = false;
+									isgrabbed = true;
+								}
+							}
+							break;
+						case down:
+							if (p.getPlayerCoordinates().y < ball.getCoordinates().y && p.getPlayerCoordinates().y + 100 > ball.getCoordinates().y && abs(p.getPlayerCoordinates().x - ball.getCoordinates().x) <= 80)
+							{
+								if (ball.isfree)
+								{
+									ball.isfree = false;
+									isgrabbed = true;
+								}
+							}
+							break;
+						default:
+							break;
 						}
 					}
-					break;
-				case left:
-					if (p.getPlayerCoordinates().x > ball.getCoordinates().x && p.getPlayerCoordinates().x - 150 <ball.getCoordinates().x && abs(p.getPlayerCoordinates().y + 50 - ball.getCoordinates().y) <= 64)
+					else
 					{
-						if (ball.isfree)
-						{
-							ball.isfree = false;
-							isgrabbed = true;
-						}
-					}
-					break;
-				case up:
-					if (p.getPlayerCoordinates().y > ball.getCoordinates().y  && p.getPlayerCoordinates().y - 100 < ball.getCoordinates().y && abs(p.getPlayerCoordinates().x - ball.getCoordinates().x) <= 80)
-					{
-						if (ball.isfree)
-						{
-							ball.isfree = false;
-							isgrabbed = true;
-						}
-					}
-					break;
-				case down:
-					if (p.getPlayerCoordinates().y < ball.getCoordinates().y  && p.getPlayerCoordinates().y + 100 > ball.getCoordinates().y && abs(p.getPlayerCoordinates().x - ball.getCoordinates().x) <= 80)
-					{
-						if (ball.isfree)
-						{
-							ball.isfree = false;
-							isgrabbed = true;
-						}
-					}
-					break;
-				default:
-					break;
-				}
-				}	
-				else
-				{
-					
+
 						ball.isfree = true;
 						isgrabbed = false;
-				}
-				
-				
+					}
 
-			}
-			if (Keyboard::isKeyPressed(Keyboard::Q))
-			{
-				
-					if (isgrabbed)
+
+
+				}
+				if (Keyboard::isKeyPressed(Keyboard::Q))
 				{
 
-					switch (p.dir)
+					if (isgrabbed)
 					{
-					case right:
+
+						switch (p.dir)
+						{
+						case right:
 
 							ball.isfree = true;
-							ball.set_position(p.getPlayerCoordinates().x + 200 , p.getPlayerCoordinates().y + 60);
+							ball.set_position(p.getPlayerCoordinates().x + 200, p.getPlayerCoordinates().y + 60);
 							if (ball.getCoordinates().x <= 22) { ball.set_position(30, ball.getCoordinates().y); }
 							if (ball.getCoordinates().x > 1510) { ball.set_position(1490, ball.getCoordinates().y); }
 							if (ball.getCoordinates().y < 17) { ball.set_position(ball.getCoordinates().x, 32); }
 							if (ball.getCoordinates().y > 629) { ball.set_position(ball.getCoordinates().x, 605); }
-							
+
 							break;
-					case left:
+						case left:
+
+							ball.isfree = true;
+							ball.set_position(p.getPlayerCoordinates().x - 150, p.getPlayerCoordinates().y + 60);
+							if (ball.getCoordinates().x <= 22) { ball.set_position(30, ball.getCoordinates().y); }
+							if (ball.getCoordinates().x > 1510) { ball.set_position(1490, ball.getCoordinates().y); }
+							if (ball.getCoordinates().y < 17) { ball.set_position(ball.getCoordinates().x, 32); }
+							if (ball.getCoordinates().y > 629) { ball.set_position(ball.getCoordinates().x, 605); }
+							break;
+						case up:
+							ball.isfree = true;
+							ball.set_position(p.getPlayerCoordinates().x + 35, p.getPlayerCoordinates().y - 120);
+							if (ball.getCoordinates().x <= 22) { ball.set_position(30, ball.getCoordinates().y); }
+							if (ball.getCoordinates().x > 1510) { ball.set_position(1490, ball.getCoordinates().y); }
+							if (ball.getCoordinates().y < 17) { ball.set_position(ball.getCoordinates().x, 32); }
+							if (ball.getCoordinates().y > 629) { ball.set_position(ball.getCoordinates().x, 605); }
+							break;
+						case down:
+							ball.isfree = true;
+							ball.set_position(p.getPlayerCoordinates().x + 35, p.getPlayerCoordinates().y + 220);
+							if (ball.getCoordinates().x <= 22) { ball.set_position(30, ball.getCoordinates().y); }
+							if (ball.getCoordinates().x > 1510) { ball.set_position(1490, ball.getCoordinates().y); }
+							if (ball.getCoordinates().y < 17) { ball.set_position(ball.getCoordinates().x, 32); }
+							if (ball.getCoordinates().y > 629) { ball.set_position(ball.getCoordinates().x, 605); }
+							break;
+						default:
+							break;
+						}
+						isgrabbed = false;
+					}
+				}
+				p.update(time);
+			break;
+		case 2:
+			
+				if (check_s == 1)
+				{
+
+					end = std::chrono::high_resolution_clock::now();
+
+					std::chrono::duration<float> dur = end - start;
+
+					if (dur.count() > 3.0)
+					{
+						speed = s_ordinary;
+						check_s = 0;
+						ball.setSpeedAnim(0.02);
+						speed_anim = 0.005;
+
+					}
+				}
+				if (Keyboard::isKeyPressed(Keyboard::Left))
+				{
+					p.dir = left; p.speed = speed;
+					CurrentFrameX += speed_anim * time;
+					if (CurrentFrameX > CurrentFrameMax)
+					{
+						CurrentFrameX = 0;
+					}
+					p.spr.setTextureRect(IntRect(left_anim_x * int(CurrentFrameX) + left_anim_x_rev, left_anim_y, left_rev_num * p.h, p.w));
+					getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y);
+
+
+				}
+				if (Keyboard::isKeyPressed(Keyboard::Right))
+				{
+					p.dir = right; p.speed = speed;
+					CurrentFrameX += speed_anim * time;
+					if (CurrentFrameX > CurrentFrameMax)
+					{
+						CurrentFrameX = 0;
+					}
+					p.spr.setTextureRect(IntRect(right_anim_x * int(CurrentFrameX) + right_anim_x_rev, right_anim_y, right_rev_num * p.h, p.w));
+					getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y);
+				}
+				if (Keyboard::isKeyPressed(Keyboard::Up))
+				{
+					p.dir = up; p.speed = speed;
+					CurrentFrameX += speed_anim * time;
+					if (CurrentFrameX > CurrentFrameMax)
+					{
+						CurrentFrameX = 0;
+					}
+					p.spr.setTextureRect(IntRect(up_anim_x * int(CurrentFrameX), up_anim_y + up_anim_y_rev, p.h, p.w * up_rev_num));
+					getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y);
+				}
+				if (Keyboard::isKeyPressed(Keyboard::Down))
+				{
+					p.dir = down; p.speed = speed;
+					CurrentFrameX += speed_anim * time;
+					if (CurrentFrameX > CurrentFrameMax)
+					{
+						CurrentFrameX = 0;
+					}
+					p.spr.setTextureRect(IntRect(down_anim_x * int(CurrentFrameX), down_anim_y + down_anim_y_rev, p.h, p.w * down_rev_num));
+					getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y);
+				}
+				if (Keyboard::isKeyPressed(Keyboard::J))
+				{
+
+					if (check_s == 0)
+					{
+						s_ordinary = speed;
+						speed += 0.15;
+						check_s = 1;
+						start = std::chrono::high_resolution_clock::now();
+						ball.setSpeedAnim(0.03);
+						speed_anim = 0.01;
+					}
+
+				}
+				if (Keyboard::isKeyPressed(Keyboard::K))
+				{
+
+					if (ball.isfree)
+					{
+
+						switch (p.dir)
+						{
+						case right:
+							if (p.getPlayerCoordinates().x<ball.getCoordinates().x && p.getPlayerCoordinates().x + 150 > ball.getCoordinates().x && abs(p.getPlayerCoordinates().y + 50 - ball.getCoordinates().y) <= 64)
+							{
+								if (ball.isfree)
+								{
+									ball.isfree = false;
+									isgrabbed = true;
+								}
+							}
+							break;
+						case left:
+							if (p.getPlayerCoordinates().x > ball.getCoordinates().x && p.getPlayerCoordinates().x - 150 < ball.getCoordinates().x && abs(p.getPlayerCoordinates().y + 50 - ball.getCoordinates().y) <= 64)
+							{
+								if (ball.isfree)
+								{
+									ball.isfree = false;
+									isgrabbed = true;
+								}
+							}
+							break;
+						case up:
+							if (p.getPlayerCoordinates().y > ball.getCoordinates().y && p.getPlayerCoordinates().y - 100 < ball.getCoordinates().y && abs(p.getPlayerCoordinates().x - ball.getCoordinates().x) <= 80)
+							{
+								if (ball.isfree)
+								{
+									ball.isfree = false;
+									isgrabbed = true;
+								}
+							}
+							break;
+						case down:
+							if (p.getPlayerCoordinates().y < ball.getCoordinates().y && p.getPlayerCoordinates().y + 100 > ball.getCoordinates().y && abs(p.getPlayerCoordinates().x - ball.getCoordinates().x) <= 80)
+							{
+								if (ball.isfree)
+								{
+									ball.isfree = false;
+									isgrabbed = true;
+								}
+							}
+							break;
+						default:
+							break;
+						}
+					}
+					else
+					{
 
 						ball.isfree = true;
-						ball.set_position(p.getPlayerCoordinates().x - 150, p.getPlayerCoordinates().y + 60);
-						if (ball.getCoordinates().x <= 22) { ball.set_position(30, ball.getCoordinates().y); }
-						if (ball.getCoordinates().x > 1510) { ball.set_position(1490, ball.getCoordinates().y); }
-						if (ball.getCoordinates().y < 17) { ball.set_position(ball.getCoordinates().x, 32); }
-						if (ball.getCoordinates().y > 629) { ball.set_position(ball.getCoordinates().x, 605); }
-						break;
-					case up:
-						ball.isfree = true;
-						ball.set_position(p.getPlayerCoordinates().x+35 , p.getPlayerCoordinates().y - 120);
-						if (ball.getCoordinates().x <= 22) { ball.set_position(30, ball.getCoordinates().y); }
-						if (ball.getCoordinates().x > 1510) { ball.set_position(1490, ball.getCoordinates().y); }
-						if (ball.getCoordinates().y < 17) { ball.set_position(ball.getCoordinates().x, 32); }
-						if (ball.getCoordinates().y > 629) { ball.set_position(ball.getCoordinates().x, 605); }
-						break;
-					case down:
-						ball.isfree = true;
-						ball.set_position(p.getPlayerCoordinates().x + 35, p.getPlayerCoordinates().y + 220);
-						if (ball.getCoordinates().x <= 22) { ball.set_position(30, ball.getCoordinates().y); }
-						if (ball.getCoordinates().x > 1510) { ball.set_position(1490, ball.getCoordinates().y); }
-						if (ball.getCoordinates().y < 17) { ball.set_position(ball.getCoordinates().x, 32); }
-						if (ball.getCoordinates().y > 629) { ball.set_position(ball.getCoordinates().x, 605); }
-						break;
-					default:
-						break;
+						isgrabbed = false;
 					}
-					isgrabbed = false;
+
+
+
 				}
-				
-			}
+				if (Keyboard::isKeyPressed(Keyboard::L))
+				{
+
+					if (isgrabbed)
+					{
+
+						switch (p.dir)
+						{
+						case right:
+
+							ball.isfree = true;
+							ball.set_position(p.getPlayerCoordinates().x + 200, p.getPlayerCoordinates().y + 60);
+							if (ball.getCoordinates().x <= 22) { ball.set_position(30, ball.getCoordinates().y); }
+							if (ball.getCoordinates().x > 1510) { ball.set_position(1490, ball.getCoordinates().y); }
+							if (ball.getCoordinates().y < 17) { ball.set_position(ball.getCoordinates().x, 32); }
+							if (ball.getCoordinates().y > 629) { ball.set_position(ball.getCoordinates().x, 605); }
+
+							break;
+						case left:
+
+							ball.isfree = true;
+							ball.set_position(p.getPlayerCoordinates().x - 150, p.getPlayerCoordinates().y + 60);
+							if (ball.getCoordinates().x <= 22) { ball.set_position(30, ball.getCoordinates().y); }
+							if (ball.getCoordinates().x > 1510) { ball.set_position(1490, ball.getCoordinates().y); }
+							if (ball.getCoordinates().y < 17) { ball.set_position(ball.getCoordinates().x, 32); }
+							if (ball.getCoordinates().y > 629) { ball.set_position(ball.getCoordinates().x, 605); }
+							break;
+						case up:
+							ball.isfree = true;
+							ball.set_position(p.getPlayerCoordinates().x + 35, p.getPlayerCoordinates().y - 120);
+							if (ball.getCoordinates().x <= 22) { ball.set_position(30, ball.getCoordinates().y); }
+							if (ball.getCoordinates().x > 1510) { ball.set_position(1490, ball.getCoordinates().y); }
+							if (ball.getCoordinates().y < 17) { ball.set_position(ball.getCoordinates().x, 32); }
+							if (ball.getCoordinates().y > 629) { ball.set_position(ball.getCoordinates().x, 605); }
+							break;
+						case down:
+							ball.isfree = true;
+							ball.set_position(p.getPlayerCoordinates().x + 35, p.getPlayerCoordinates().y + 220);
+							if (ball.getCoordinates().x <= 22) { ball.set_position(30, ball.getCoordinates().y); }
+							if (ball.getCoordinates().x > 1510) { ball.set_position(1490, ball.getCoordinates().y); }
+							if (ball.getCoordinates().y < 17) { ball.set_position(ball.getCoordinates().x, 32); }
+							if (ball.getCoordinates().y > 629) { ball.set_position(ball.getCoordinates().x, 605); }
+							break;
+						default:
+							break;
+						}
+						isgrabbed = false;
+					}
+
+				}
+
+				p.update(time);
 			
-			p.update(time);
+		default:
+			break;
+		}
+			
 		
 	}
-	int get_score()
-	{
-		return p.playerscore;
-	}
+	
 	float get_speed()
 	{
 		return speed;
 	}
 	Player p;
+	bool getIsGrabbed()
+	{
+		return isgrabbed;
+	}
+	void setIsGrabbed(bool isgrabbed)
+	{
+		this->isgrabbed = isgrabbed;
+	}
 private:
+	int type;
 	std::chrono::steady_clock::time_point start = std::chrono::high_resolution_clock::now(), end = std::chrono::high_resolution_clock::now();
 	float s_ordinary;
 	int check_s = 0;
@@ -630,6 +849,7 @@ private:
 	float left_anim_x_rev = 0, right_anim_x_rev = 0;
 	float up_anim_y_rev = 0, down_anim_y_rev = 0;
 	int right_rev_num = 1, left_rev_num = 1, up_rev_num = 1, down_rev_num = 1;
+	
 };
 
 class Map
@@ -676,33 +896,196 @@ private:
 	String file;
 
 };
+class Gate
+{
+	std::chrono::steady_clock::time_point start = std::chrono::high_resolution_clock::now(), end = std::chrono::high_resolution_clock::now();
+
+	int score=0;
+	int type=1;
+	Coordinates coor;
+	bool is_check_first;
+	bool is_check_second;
+public:
+	
+	int getScore()
+	{
+		return score;
+	}
+	Gate(int type, float x, float y)
+	{
+		this->type = type;
+		coor.x = x;
+		coor.y = y;
+	}
+	void update(Ball&ball, Character &one, Character &two,RenderWindow & wind)
+	{
+		
+		switch (type)
+		{
+		case 1:
+			if (is_check_first&& is_check_second)
+			{
+				if (ball.getCoordinates().x <= coor.x && ball.getCoordinates().x <= coor.x + 200 && abs(ball.getCoordinates().y - coor.y) <= 70)
+				{
+					score++;
+					is_check_first = false;
+					 start = std::chrono::high_resolution_clock::now();
+				}
+			}
+			if (!is_check_first)
+			{
+				
+				 end = std::chrono::high_resolution_clock::now();
+				std::chrono::duration<float> dur = end - start;
+				std::cout << dur.count() << std::endl;
+				if (dur.count()>0&&dur.count()<3)
+				{
+					one.setIsGrabbed(false);
+					two.setIsGrabbed(false);
+					ball.isfree = true;
+					Font font;
+						font.loadFromFile("CyrilicOld.TTF");
+						Text text("Goal!", font, 70);
+						text.setFillColor(Color::White);
+						text.setOutlineThickness(1);
+						text.setOutlineColor(Color::Black);
+						text.setStyle(Text::Italic|Text::Bold);
+						
+						text.setPosition(view.getCenter().x-100, view.getCenter().y-250);
+						wind.draw(text);
+						
+					
+					
+					
+				}
+				if (dur.count() > 3.5)
+				{
+
+
+					ball.set_position(ball.getDefaultCoordinates().x, ball.getDefaultCoordinates().y);
+					one.p.setPosition(one.p.getDefaultCoordinates().x, one.p.getDefaultCoordinates().y);
+					two.p.setPosition(two.p.getDefaultCoordinates().x, two.p.getDefaultCoordinates().y);
+					
+					is_check_first = true;
+					
+				}
+				
+			}
+			break;
+		case 2:
+			if (is_check_second&& is_check_first)
+			{
+				if (ball.getCoordinates().x >= coor.x && ball.getCoordinates().x >= coor.x - 200 && abs(ball.getCoordinates().y - coor.y) <=70)
+				{
+					score++;
+					is_check_second = false;
+					start = std::chrono::high_resolution_clock::now();
+
+				}
+			}
+			if (!is_check_second)
+			{
+				one.setIsGrabbed(false);
+				two.setIsGrabbed(false);
+				ball.isfree = true;
+				end = std::chrono::high_resolution_clock::now();
+				std::chrono::duration<float> dur = end - start;
+				std::cout << dur.count() << std::endl;
+				if (dur.count() > 0 && dur.count() < 3)
+				{
+
+					Font font;
+					font.loadFromFile("CyrilicOld.TTF");
+					Text text("Goal!", font, 70);
+					text.setFillColor(Color::White);
+					text.setOutlineThickness(1);
+					text.setOutlineColor(Color::Black);
+					text.setStyle(Text::Italic | Text::Bold);
+
+					text.setPosition(view.getCenter().x - 100, view.getCenter().y - 250);
+					wind.draw(text);
 
 
 
 
+				}
+				if (dur.count() > 3.5)
+				{
+
+
+					ball.set_position(ball.getDefaultCoordinates().x, ball.getDefaultCoordinates().y);
+					one.p.setPosition(one.p.getDefaultCoordinates().x, one.p.getDefaultCoordinates().y);
+					two.p.setPosition(two.p.getDefaultCoordinates().x, two.p.getDefaultCoordinates().y);
+					is_check_second = true;
+					
+				}
+
+			}
+			break;
+		default:
+			break;
+		}
+		
+	}
+};
+void ShowCoordinate(Event &ev)
+{
+	if (Mouse::isButtonPressed(Mouse::Button::Left))
+	{
+		std::cout << "x= " << ev.mouseMove.x << std::endl;
+		std::cout << "y= " << ev.mouseMove.y << std::endl;
+	}
+}
+
+void Write_Score(RenderWindow &wind,String s,float x , float y,int type)
+{
+	Font font;
+	font.loadFromFile("CyrilicOld.TTF");
+	Text text(s,font, 60);
+	switch (type)
+	{
+	case 1:
+		text.setFillColor(Color::Red);
+		break;
+	case 2:
+		text.setFillColor(Color::Blue);
+		break;
+	default:
+		break;
+	}
+	
+	text.setOutlineThickness(0.5);
+	text.setOutlineColor(Color(0, 0, 0));
+	text.setStyle(Text::Bold);
+	
+	text.setPosition(x, y);
+	wind.draw(text);
+}
 
 int main()
 {
 	sf::RenderWindow wind(sf::VideoMode(800, 600), "Wind");
-	Font font;
-	font.loadFromFile("CyrilicOld.TTF");
-	Text text("", font, 40);
-	text.setFillColor(Color(244, 244, 244));
-	text.setOutlineThickness(0.5);
-	text.setOutlineColor(Color(0, 0, 0));
-	text.setStyle(Text::Bold);
-	view.reset(FloatRect(0, 0, 800, 600));
 
+	view.reset(FloatRect(0, 0, 800, 600));
 	Ball ball("ball.png", 0,0, 32, 32);
-	
-	ball.set_position(450, 250);
+	ball.set_position(767.5, 320);
+
 	float speed = 0.2;
-	Character hero("4.png", 196, 196, 96, 96, 3, speed, 96, 96, 96, 96, 110, 110, 288, 0);
-	hero.enable_revers_rect(0);
+
+	Character first("Red.png", 0, 196, 96, 96, 3, speed, 96, 96, 96, 96, 110, 110, 288, 0,1);
+	Character second("Blue.png", 0, 196, 96, 96, 3, speed, 96, 96, 96, 96, 110, 110, 288, 0,2);
 	
+	first.enable_revers_rect(0);
+	second.enable_revers_rect(0);
+	Gate gate_first(1, 119, 323);
+	Gate gate_second(2, 1407, 323);
 	Map map("map.png");
 	Clock clock;
-
+	first.p.setPosition(200, 275);
+	second.p.setPosition(1275, 275);
+	first.p.setDefaultCoordinates(200, 275);
+	second.p.setDefaultCoordinates(1275, 275);
+	ball.setDefaultCoordinates(767.5, 320);
 	while (wind.isOpen())
 	{
 		sf::Event ev;
@@ -719,21 +1102,22 @@ int main()
 
 		}
 
-		viewmap(time);
-		hero.move(time,ball);
-
+		//viewmap(time);
+		first.move(time,ball);
+		second.move(time, ball);
+		//ShowCoordinate(ev);
 		wind.setView(view);
 		wind.clear();
 		map.draw_the_map(wind);
-		std::string s = std::to_string(hero.get_score());
-		text.setString(s);
-		text.setPosition(view.getCenter().x - 270, view.getCenter().y + 250);
-		ball.update(time, hero.p.getPlayerCoordinates().x, hero.p.getPlayerCoordinates().y, hero.p.dx, hero.p.dy, hero.get_speed());
-		wind.draw(text);
-		
-		
+		ball.update(time, first.p.getPlayerCoordinates().x, first.p.getPlayerCoordinates().y, first.p.dx, first.p.dy, first.get_speed(),first.getIsGrabbed());
+		ball.update(time, second.p.getPlayerCoordinates().x, second.p.getPlayerCoordinates().y, second.p.dx, second.p.dy, second.get_speed(),second.getIsGrabbed());
+		gate_first.update(ball,first,second,wind);
+		gate_second.update(ball,first,second,wind);
+		Write_Score(wind, std::to_string(gate_first.getScore()), view.getCenter().x-350, view.getCenter().y-300, 1);
+		Write_Score(wind, std::to_string(gate_second.getScore()), view.getCenter().x +325 , view.getCenter().y - 300, 2);
 		wind.draw(ball.spr);
-		wind.draw(hero.get_spr());
+		wind.draw(first.get_spr());
+		wind.draw(second.get_spr());
 		wind.display();
 	}
 	return 0;
