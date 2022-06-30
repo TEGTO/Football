@@ -44,6 +44,8 @@ View getPlayerCoordinatesForView2(float x, float y)
 	view2.setCenter(tempX, tempY);
 	return view2;
 }
+
+
 View viewmap(float time)
 {
 

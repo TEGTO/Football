@@ -1840,7 +1840,7 @@ void drawTime(int time,RenderWindow&wind,float x ,float y)
 
 
 
-void menu_(int &typeOfCam,RenderWindow &wind, int & menuCheck,bool menuIsOn, Sound & menuchange, Sound& splitchange,int &soundMenuCheck, int& whichButton)
+void menu_(int &typeOfCam,RenderWindow &wind, int & menuCheck,bool menuIsOn, Sound & menuchange, Sound& splitchange,int &soundMenuCheck, int& whichButton,float x ,float y)
 {
 	
 	if (menuIsOn)
@@ -1865,9 +1865,9 @@ void menu_(int &typeOfCam,RenderWindow &wind, int & menuCheck,bool menuIsOn, Sou
 		}
 		
 		Sprite sp_menu(menu_file), sp_pve(img_pve), sp_pvp(img_pvp), sp_split(img_split);
-		sp_pve.setPosition(0, 0);
-		sp_pvp.setPosition(0, 0);
-		sp_split.setPosition(0, 0);
+		sp_pve.setPosition(x, y);
+		sp_pvp.setPosition(x, y);
+		sp_split.setPosition(x, y);
 
 		if (IntRect(525, 342, 225, 60).contains(Mouse::getPosition(wind)))
 		{
@@ -1950,10 +1950,15 @@ void menu_(int &typeOfCam,RenderWindow &wind, int & menuCheck,bool menuIsOn, Sou
 }
 
 int main()
-{
+{restart:
+	int SizeOfWindowX = 800;
+	int soundMenuCheck = 1;
+	int SizeOfWindowY = 600;
+	int whichButton = 0;
+	
 	SoundBuffer menuchangeBuffer;
 	menuchangeBuffer.loadFromFile("audio/menuchange.wav");
-	
+	sf::RenderWindow wind(sf::VideoMode(SizeOfWindowX, SizeOfWindowY), "Wind");
 	Sound menuchange(menuchangeBuffer);
 	SoundBuffer splitchangeBuffer;
 	splitchangeBuffer.loadFromFile("audio/splitchange.wav");
@@ -1962,11 +1967,7 @@ int main()
 	menumusic.openFromFile("audio/menumusic.ogg");
 	menumusic.play();
 	
-	int SizeOfWindowX = 800;
-	int soundMenuCheck = 1;
-	int SizeOfWindowY = 600;
-	int whichButton = 0;
-	sf::RenderWindow wind(sf::VideoMode(SizeOfWindowX, SizeOfWindowY), "Wind");
+	
 	int typeOfCam= default_c;
 	int menuCheck = menu;
 	int checkCam = 1;
@@ -2005,6 +2006,7 @@ int main()
 
 	while (wind.isOpen())
 	{
+		
 		sf::Event ev;
 		float time = clock.getElapsedTime().asMicroseconds();
 
@@ -2019,10 +2021,33 @@ int main()
 			}
 
 		}
-	
+		if (Keyboard::isKeyPressed(Keyboard::Escape))
+		{
+			wind.clear();
+			menuCheck = menu;
+			ball.isfree = true;
+			first.p.setPosition(200, 275);
+			second.p.setPosition(1275, 275);
+			first.p.setDefaultCoordinates(200, 275);
+			second.p.setDefaultCoordinates(1275, 275);
+			first.setIsGrabbed(false);
+			second.setIsGrabbed(false);
+			ball.setDefaultCoordinates(767.5, 320);
+			
+			gate_first.setScore(0);
+			gate_second.setScore(0);
+			gate_first.is_on=false;
+			gate_second.is_on = false;
+			typeOfCam = default_c;
+			view.setViewport((FloatRect(0, 0, 1.0f, 1)));
+			goto restart;
+		
+		}
+
 		if (menuCheck!=menu)
 		{
-
+			gate_first.is_on = true;
+			gate_second.is_on = true;
 			menumusic.stop();
 		if (checkCam==1&&menuCheck!=menu)
 		{
@@ -2126,7 +2151,7 @@ int main()
 		}
 		else
 		{
-			menu_(typeOfCam, wind, menuCheck, menuIsOn, menuchange, splitchange, soundMenuCheck, whichButton);
+			menu_(typeOfCam, wind, menuCheck, menuIsOn, menuchange, splitchange, soundMenuCheck, whichButton,0,0);
 		}
 		wind.display();
 		wind.clear();
