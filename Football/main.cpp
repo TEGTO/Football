@@ -382,6 +382,12 @@ public:
 		this->up_anim_y = up_anim_y;
 		this->down_anim_y = down_anim_y;
 		this->type = type;
+		shootBuffer.loadFromFile("audio/shooting2.wav");
+		shoot.setBuffer(shootBuffer);
+		walkingBuffer.loadFromFile("audio/walking2.wav");
+		walking.setBuffer(walkingBuffer);
+		kickBuffer.loadFromFile("audio/kick.wav");
+		kick.setBuffer(kickBuffer);
 	}
 	
 	void set_speed(double speed)
@@ -446,9 +452,21 @@ public:
 	}
 	void move(float time,Ball& ball,int typeOfCam,int typeOfGame,float x_first_player,float y_first_player)
 	{
+		
 		switch (type)
 		{
 		case 1:
+				if (isWalking==2)
+				{
+				
+					end_walk = std::chrono::high_resolution_clock::now();
+					std::chrono::duration<float> dur_walk = end_walk - start_walk;
+					if (dur_walk.count()> time_of_walking)
+					{
+						
+						isWalking = 0;
+					}
+				}
 				if (check_s == 1)
 				{
 					end = std::chrono::high_resolution_clock::now();
@@ -459,6 +477,7 @@ public:
 						check_s = 0;
 						ball.setSpeedAnim(0.02);
 						speed_anim = 0.005;
+						time_of_walking = 0.7;
 					}
 				}
 				if (Keyboard::isKeyPressed(Keyboard::A))
@@ -470,9 +489,16 @@ public:
 					
 					getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y, typeOfCam);
 					WhichPlayerIsUsingCam = 1;
+					if (isWalking == 0)
+					{
+
+						isWalking = 1;
+					}
+					
 				}
 				if (Keyboard::isKeyPressed(Keyboard::D))
 				{
+					
 					p.dir = right; p.speed = speed;
 					CurrentFrameX += speed_anim * time;
 					if (CurrentFrameX > CurrentFrameMax)
@@ -482,6 +508,12 @@ public:
 					p.spr.setTextureRect(IntRect(right_anim_x * int(CurrentFrameX) + right_anim_x_rev, right_anim_y, right_rev_num * p.h, p.w));
 					getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y, typeOfCam);
 					WhichPlayerIsUsingCam = 1;
+					if (isWalking == 0)
+					{
+
+						isWalking = 1;
+					}
+					
 				}
 				if (Keyboard::isKeyPressed(Keyboard::W))
 				{
@@ -494,9 +526,17 @@ public:
 					p.spr.setTextureRect(IntRect(up_anim_x * int(CurrentFrameX), up_anim_y + up_anim_y_rev, p.h, p.w * up_rev_num));
 					getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y, typeOfCam);
 					WhichPlayerIsUsingCam = 1;
+					if (isWalking == 0)
+					{
+
+						isWalking = 1;
+					}
+					
 				}
 				if (Keyboard::isKeyPressed(Keyboard::S))
 				{
+					
+					
 					p.dir = down; p.speed = speed;
 					CurrentFrameX += speed_anim * time;
 					if (CurrentFrameX > CurrentFrameMax)
@@ -506,7 +546,22 @@ public:
 					p.spr.setTextureRect(IntRect(down_anim_x * int(CurrentFrameX), down_anim_y + down_anim_y_rev, p.h, p.w * down_rev_num));
 					getPlayerCoordinatesForView(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y, typeOfCam);
 					WhichPlayerIsUsingCam = 1;
+					if (isWalking==0)
+					{
+						
+						isWalking = 1;
+					}
+					
 				}
+				if (isWalking == 1)
+				{
+					isWalking =2;
+					start_walk = std::chrono::high_resolution_clock::now();
+					walking.play();
+					
+
+				}
+				
 				if (Keyboard::isKeyPressed(Keyboard::LShift))
 				{
 
@@ -518,6 +573,7 @@ public:
 						start = std::chrono::high_resolution_clock::now();
 						ball.setSpeedAnim(0.03);
 						speed_anim = 0.01;
+						time_of_walking = 0.5;
 					}
 
 				}
@@ -628,6 +684,7 @@ public:
 							break;
 						}
 						isgrabbed = false;
+						kick.play();
 					}
 				}
 				if (isCheck)
@@ -635,16 +692,29 @@ public:
 					if (Keyboard::isKeyPressed(Keyboard::F))
 					{
 						
+						shoot.play();
 							isShoot = true;
 							isCheck = false;
 					}
 				}
 				
 				p.update(time);
+
 			break;
 		case 2:
 			if (typeOfGame != pve)
 			{
+				if (isWalking == 2)
+				{
+
+					end_walk = std::chrono::high_resolution_clock::now();
+					std::chrono::duration<float> dur_walk = end_walk - start_walk;
+					if (dur_walk.count() > time_of_walking)
+					{
+
+						isWalking = 0;
+					}
+				}
 				if (check_s == 1)
 				{
 
@@ -682,6 +752,12 @@ public:
 						break;
 					}
 					WhichPlayerIsUsingCam = 2;
+					if (isWalking == 0)
+					{
+
+						isWalking = 1;
+					}
+
 
 
 				}
@@ -706,6 +782,12 @@ public:
 						break;
 					}
 					WhichPlayerIsUsingCam = 2;
+					if (isWalking == 0)
+					{
+
+						isWalking = 1;
+					}
+
 				}
 				if (Keyboard::isKeyPressed(Keyboard::Up))
 				{
@@ -728,6 +810,12 @@ public:
 						break;
 					}
 					WhichPlayerIsUsingCam = 2;
+					if (isWalking == 0)
+					{
+
+						isWalking = 1;
+					}
+
 				}
 				if (Keyboard::isKeyPressed(Keyboard::Down))
 				{
@@ -750,6 +838,20 @@ public:
 						break;
 					}
 					WhichPlayerIsUsingCam = 2;
+					if (isWalking == 0)
+					{
+
+						isWalking = 1;
+					}
+
+				}
+				if (isWalking == 1)
+				{
+					isWalking = 2;
+					start_walk = std::chrono::high_resolution_clock::now();
+					walking.play();
+
+
 				}
 				if (Keyboard::isKeyPressed(Keyboard::J))
 				{
@@ -885,7 +987,7 @@ public:
 				{
 					if (Keyboard::isKeyPressed(Keyboard::I))
 					{
-
+						shoot.play();
 						isShoot = true;
 						isCheck = false;
 					}
@@ -896,9 +998,22 @@ public:
 
 			else
 			{
-			if (!isgrabbed )
+			if (isWalking == 2)
 			{
 
+				end_walk = std::chrono::high_resolution_clock::now();
+				std::chrono::duration<float> dur_walk = end_walk - start_walk;
+				if (dur_walk.count() > time_of_walking)
+				{
+
+					isWalking = 0;
+				}
+			}
+
+
+			if (!isgrabbed )
+			{
+				
 				if (abs(p.getPlayerCoordinates().x - ball.getCoordinates().x) > 30)
 				{
 					
@@ -909,6 +1024,7 @@ public:
 						if (CurrentFrameX > CurrentFrameMax) { CurrentFrameX = 0; }
 						p.spr.setTextureRect(IntRect(left_anim_x * int(CurrentFrameX) + left_anim_x_rev, left_anim_y, left_rev_num * p.h, p.w));
 						if (typeOfCam == split_c) { getPlayerCoordinatesForView2(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y); }
+					
 					}
 					if (p.getPlayerCoordinates().x < ball.getCoordinates().x)
 					{
@@ -917,6 +1033,12 @@ public:
 						if (CurrentFrameX > CurrentFrameMax) { CurrentFrameX = 0; }
 						p.spr.setTextureRect(IntRect(right_anim_x * int(CurrentFrameX) + right_anim_x_rev, right_anim_y, right_rev_num * p.h, p.w));
 						if (typeOfCam == split_c) { getPlayerCoordinatesForView2(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y); }
+						
+					}
+					if (isWalking == 0)
+					{
+
+						isWalking = 1;
 					}
 				}
 				if (abs(p.getPlayerCoordinates().y - ball.getCoordinates().y) > 20)
@@ -929,6 +1051,7 @@ public:
 						if (CurrentFrameX > CurrentFrameMax) { CurrentFrameX = 0; }
 						p.spr.setTextureRect(IntRect(down_anim_x * int(CurrentFrameX), down_anim_y + down_anim_y_rev, p.h, p.w * down_rev_num));
 						if (typeOfCam == split_c) { getPlayerCoordinatesForView2(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y); }
+						
 					}
 					if (p.getPlayerCoordinates().y > ball.getCoordinates().y)
 					{
@@ -937,6 +1060,12 @@ public:
 						if (CurrentFrameX > CurrentFrameMax) { CurrentFrameX = 0; }
 						p.spr.setTextureRect(IntRect(up_anim_x * int(CurrentFrameX), up_anim_y + up_anim_y_rev, p.h, p.w * up_rev_num));
 						if (typeOfCam == split_c) { getPlayerCoordinatesForView2(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y); }
+						
+					}
+					if (isWalking == 0)
+					{
+
+						isWalking = 1;
 					}
 				}
 				if (abs(p.getPlayerCoordinates().x - ball.getCoordinates().x) < 30&& abs(p.getPlayerCoordinates().y - ball.getCoordinates().y)< 20)
@@ -950,6 +1079,9 @@ public:
 				}
 				
 			}
+
+
+
 			if (isgrabbed )
 			{
 				if (abs(p.getPlayerCoordinates().x - 119) > 20)
@@ -961,6 +1093,7 @@ public:
 						if (CurrentFrameX > CurrentFrameMax) { CurrentFrameX = 0; }
 						p.spr.setTextureRect(IntRect(left_anim_x * int(CurrentFrameX) + left_anim_x_rev, left_anim_y, left_rev_num * p.h, p.w));
 						if (typeOfCam == split_c) { getPlayerCoordinatesForView2(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y); }
+						
 					}
 					if (p.getPlayerCoordinates().x <119)
 					{
@@ -969,6 +1102,12 @@ public:
 						if (CurrentFrameX > CurrentFrameMax) { CurrentFrameX = 0; }
 						p.spr.setTextureRect(IntRect(right_anim_x * int(CurrentFrameX) + right_anim_x_rev, right_anim_y, right_rev_num * p.h, p.w));
 						if (typeOfCam == split_c) { getPlayerCoordinatesForView2(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y); }
+						
+					}
+					if (isWalking == 0)
+					{
+
+						isWalking = 1;
 					}
 				}
 				if (abs(p.getPlayerCoordinates().y - 329) > 30)
@@ -989,7 +1128,14 @@ public:
 						p.spr.setTextureRect(IntRect(up_anim_x * int(CurrentFrameX), up_anim_y + up_anim_y_rev, p.h, p.w * up_rev_num));
 						if (typeOfCam == split_c) { getPlayerCoordinatesForView2(p.getPlayerCoordinates().x, p.getPlayerCoordinates().y); }
 					}
+					if (isWalking == 0)
+					{
+
+						isWalking = 1;
+					}
 				}
+
+				
 			}
 			if (abs(p.getPlayerCoordinates().y - y_first_player) <= 20)
 			{
@@ -997,6 +1143,7 @@ public:
 				{
 					if (rand() % 2 == 0)
 					{
+						shoot.play();
 						isShoot = true;
 						isCheck = false;
 					}
@@ -1005,7 +1152,17 @@ public:
 				}
 			}
 			}
-			
+
+
+
+			if(isWalking == 1)
+			{
+				isWalking = 2;
+				start_walk = std::chrono::high_resolution_clock::now();
+				walking.play();
+
+
+			}
 			p.update(time);
 		default:
 			break;
@@ -1081,8 +1238,9 @@ public:
 	}
 	bool  isShoot = false;
 private:
-	int type;
+	int type,isWalking=0;
 	std::chrono::steady_clock::time_point start = std::chrono::high_resolution_clock::now(), end = std::chrono::high_resolution_clock::now();
+	std::chrono::steady_clock::time_point start_walk = std::chrono::high_resolution_clock::now(), end_walk = std::chrono::high_resolution_clock::now();
 	float s_ordinary;
 	int check_s = 0;
 	float CurrentFrameX = 0;
@@ -1095,7 +1253,13 @@ private:
 	float left_anim_x_rev = 0, right_anim_x_rev = 0;
 	float up_anim_y_rev = 0, down_anim_y_rev = 0;
 	int right_rev_num = 1, left_rev_num = 1, up_rev_num = 1, down_rev_num = 1;
-	
+	SoundBuffer shootBuffer;
+	SoundBuffer walkingBuffer;
+	SoundBuffer kickBuffer;
+	Sound shoot;
+	Sound walking;
+	Sound kick;
+	float time_of_walking = 0.7;
 };
 
 class Map
@@ -1105,7 +1269,7 @@ public:
 	{
 		this->file = file;
 		map_image.loadFromFile("map/" + file);
-		map_image.createMaskFromColor(Color::White);
+	
 		tex_map.loadFromImage(map_image);
 		spr_map.setTexture(tex_map);
 	}
@@ -1130,6 +1294,15 @@ public:
 				if (TileMap[i][j] == '|')spr_map.setTextureRect(IntRect(228, 0, 32, 32));
 				if (TileMap[i][j] == 'l')spr_map.setTextureRect(IntRect(260, 0, -32, 32));
 				if (TileMap[i][j] == 'w')spr_map.setTextureRect(IntRect(291, 0, 32, 32));
+				if (TileMap[i][j] == '1')spr_map.setTextureRect(IntRect(328, 0, 32, 32));
+				if (TileMap[i][j] == '=')spr_map.setTextureRect(IntRect(362, 0, 32, 32));
+				if (TileMap[i][j] == 'P')spr_map.setTextureRect(IntRect(395, 0, 32, 32));
+				if (TileMap[i][j] == 'B')spr_map.setTextureRect(IntRect(427, 0, -32, 32));
+				if (TileMap[i][j] == 'L')spr_map.setTextureRect(IntRect(395, 34, 32, -32));
+				if (TileMap[i][j] == 'N')spr_map.setTextureRect(IntRect(427, 34, -32, -32));
+				if (TileMap[i][j] == '2')spr_map.setTextureRect(IntRect(464, 0, 32, 32));
+				if (TileMap[i][j] == '3')spr_map.setTextureRect(IntRect(126, -1, 32, 32));
+				if (TileMap[i][j] == '4')spr_map.setTextureRect(IntRect(158, -1, -32, 32));
 				spr_map.setPosition(j * 32, i * 32);
 				wind.draw(spr_map);
 			}
@@ -1167,6 +1340,9 @@ public:
 		this->type = type;
 		coor.x = x;
 		coor.y = y;
+		crowdBuffer.loadFromFile("audio/crowd.wav");
+		crowd.setBuffer(crowdBuffer);
+		
 	}
 	void update(Ball&ball, Character &first, Character &second,RenderWindow & wind,float x,float y,int typeOfCam,int typeOfGame)
 	{
@@ -1187,10 +1363,11 @@ public:
 					{
 						if (ball.getCoordinates().x <= coor.x+20 && ball.getCoordinates().x <= coor.x + 350 && abs(ball.getCoordinates().y - coor.y) <= 140)
 						{
-
+						
 							score++;
 							is_check_first = false;
 							start = std::chrono::high_resolution_clock::now();
+						
 						}
 					}
 				}
@@ -1202,6 +1379,7 @@ public:
 					
 					if (dur.count() > 0 && dur.count() < 3)
 					{
+						
 						first.isCanYouTake = false;
 						second.isCanYouTake = false;
 						first.setIsGrabbed(false);
@@ -1210,6 +1388,11 @@ public:
 						Font font;
 						font.loadFromFile("CyrilicOld.TTF");
 						Text text("Goal!", font, 70);
+						if (crowdCheck ==1)
+						{
+							crowd.play();
+							crowdCheck = 0;
+						}
 						text.setFillColor(Color::White);
 						text.setOutlineThickness(1);
 						text.setOutlineColor(Color::Black);
@@ -1217,7 +1400,7 @@ public:
 
 						text.setPosition(x - 60, y - 235);
 						wind.draw(text);
-
+						
 
 
 
@@ -1232,6 +1415,7 @@ public:
 						first.isCanYouTake = true;
 						second.isCanYouTake = true;
 						is_check_first = true;
+						crowdCheck = 1;
 						switch (typeOfCam)
 						{
 						case default_c:
@@ -1284,6 +1468,11 @@ public:
 						Font font;
 						font.loadFromFile("CyrilicOld.TTF");
 						Text text("Goal!", font, 70);
+						if (crowdCheck == 1)
+						{
+							crowd.play();
+							crowdCheck = 0;
+						}
 						text.setFillColor(Color::White);
 						text.setOutlineThickness(1);
 						text.setOutlineColor(Color::Black);
@@ -1306,6 +1495,7 @@ public:
 						is_check_second = true;
 						first.isCanYouTake = true;
 						second.isCanYouTake = true;
+						crowdCheck = 1;
 						switch (typeOfCam)
 						{
 						case default_c:
@@ -1339,6 +1529,9 @@ public:
 		
 		
 	}
+	int crowdCheck = 1;
+	SoundBuffer crowdBuffer;
+	Sound crowd;
 };
 void ShowCoordinate(Event &ev)
 {
@@ -1647,10 +1840,12 @@ void drawTime(int time,RenderWindow&wind,float x ,float y)
 
 
 
-void menu_(int &typeOfCam,RenderWindow &wind, int & menuCheck,bool menuIsOn)
+void menu_(int &typeOfCam,RenderWindow &wind, int & menuCheck,bool menuIsOn, Sound & menuchange, Sound& splitchange,int &soundMenuCheck, int& whichButton)
 {
+	
 	if (menuIsOn)
 	{
+		
 		wind.clear();
 		int type = menu;
 		Texture menu_file, img_pve, img_pvp, img_split;
@@ -1676,16 +1871,39 @@ void menu_(int &typeOfCam,RenderWindow &wind, int & menuCheck,bool menuIsOn)
 
 		if (IntRect(525, 342, 225, 60).contains(Mouse::getPosition(wind)))
 		{
+			if (soundMenuCheck == 0 && whichButton != 1)
+			{
+				soundMenuCheck = 1;
+			}
+			whichButton = 1;
 			type = pve;
 			img_pve.loadFromFile("images/menu/PVE_BUTTON_ON.png");
 			sp_pve.setTexture(img_pve);
-
+			whichButton = 1;
+			if (soundMenuCheck==1)
+			{
+				menuchange.play();
+				soundMenuCheck = 0;
+				
+			}
+			
 		}
 		if (IntRect(525, 418, 225, 60).contains(Mouse::getPosition(wind)))
 		{
+			if (soundMenuCheck == 0&& whichButton!=2)
+			{
+				soundMenuCheck = 1;
+			}
+			whichButton = 2;
 			type = pvp;
 			img_pvp.loadFromFile("images/menu/PVP_BUTTON_ON.png");
 			sp_pvp.setTexture(img_pvp);
+			if (soundMenuCheck == 1)
+			{
+				menuchange.play();
+				soundMenuCheck = 0;
+				
+			}
 
 		}
 		if (IntRect(525, 487, 155, 50).contains(Mouse::getPosition(wind)))
@@ -1693,6 +1911,7 @@ void menu_(int &typeOfCam,RenderWindow &wind, int & menuCheck,bool menuIsOn)
 			type = split;
 			
 			sp_split.setTexture(img_split);
+			
 
 		}
 		if (Mouse::isButtonPressed(Mouse::Left))
@@ -1708,6 +1927,7 @@ void menu_(int &typeOfCam,RenderWindow &wind, int & menuCheck,bool menuIsOn)
 				menuIsOn = false;
 				break;
 			case split:
+				splitchange.play();
 				if (typeOfCam == default_c)
 				{
 					typeOfCam = split_c;
@@ -1731,8 +1951,21 @@ void menu_(int &typeOfCam,RenderWindow &wind, int & menuCheck,bool menuIsOn)
 
 int main()
 {
+	SoundBuffer menuchangeBuffer;
+	menuchangeBuffer.loadFromFile("audio/menuchange.wav");
+	
+	Sound menuchange(menuchangeBuffer);
+	SoundBuffer splitchangeBuffer;
+	splitchangeBuffer.loadFromFile("audio/splitchange.wav");
+	Sound splitchange(splitchangeBuffer);
+	Music menumusic;
+	menumusic.openFromFile("audio/menumusic.ogg");
+	menumusic.play();
+	
 	int SizeOfWindowX = 800;
+	int soundMenuCheck = 1;
 	int SizeOfWindowY = 600;
+	int whichButton = 0;
 	sf::RenderWindow wind(sf::VideoMode(SizeOfWindowX, SizeOfWindowY), "Wind");
 	int typeOfCam= default_c;
 	int menuCheck = menu;
@@ -1786,11 +2019,11 @@ int main()
 			}
 
 		}
-
+	
 		if (menuCheck!=menu)
 		{
 
-		
+			menumusic.stop();
 		if (checkCam==1&&menuCheck!=menu)
 		{
 			checkCam++;
@@ -1893,7 +2126,7 @@ int main()
 		}
 		else
 		{
-			menu_(typeOfCam, wind, menuCheck, menuIsOn);
+			menu_(typeOfCam, wind, menuCheck, menuIsOn, menuchange, splitchange, soundMenuCheck, whichButton);
 		}
 		wind.display();
 		wind.clear();
