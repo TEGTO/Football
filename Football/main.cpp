@@ -1322,11 +1322,12 @@ class Gate
 	int score=0;
 	int type=1;
 	Coordinates coor;
-	bool is_check_first;
-	bool is_check_second;
+	
 
 public:
 	bool is_on = true;
+	bool is_check_first;
+	bool is_check_second;
 	void setScore(int score)
 	{
 		this->score = score;
@@ -2033,13 +2034,18 @@ int main()
 			first.setIsGrabbed(false);
 			second.setIsGrabbed(false);
 			ball.setDefaultCoordinates(767.5, 320);
-			
+			gate_first.is_check_first = true;
+			gate_first.is_check_second = true;
+			gate_second.is_check_first = true;
+			gate_second.is_check_second = true;
 			gate_first.setScore(0);
 			gate_second.setScore(0);
 			gate_first.is_on=false;
 			gate_second.is_on = false;
+			
 			typeOfCam = default_c;
 			view.setViewport((FloatRect(0, 0, 1.0f, 1)));
+
 			goto restart;
 		
 		}
