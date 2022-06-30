@@ -137,7 +137,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="map.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="view.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Football.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\..\..\Downloads D\download.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

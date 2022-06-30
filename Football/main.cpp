@@ -457,7 +457,7 @@ public:
 		{
 		case 1:
 				if (isWalking==2)
-				{
+				{  
 				
 					end_walk = std::chrono::high_resolution_clock::now();
 					std::chrono::duration<float> dur_walk = end_walk - start_walk;
