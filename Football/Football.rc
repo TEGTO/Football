@@ -54,7 +54,7 @@ END
 // remains consistent on all systems.
 
 
-IDI_ICON1               ICON                    "D:\\Downloads D\\download.ico"
+
 
 #endif    // Русский (Россия) resources
 /////////////////////////////////////////////////////////////////////////////
