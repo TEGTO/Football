@@ -4,7 +4,7 @@ using namespace sf;
 View view,view2;
 enum TypeOfCam
 {
-	default_c, split_c
+	defaultCamera, splitCamera
 };
 View getPlayerCoordinatesForView(float x, float y,int typeOfCam)
 {
@@ -12,7 +12,7 @@ View getPlayerCoordinatesForView(float x, float y,int typeOfCam)
 	switch (typeOfCam)
 	{
 
-	case default_c:
+	case defaultCamera:
 		
 		if (x < 400)tempX = 400;
 		if (x > 1170) tempX = 1170;
@@ -21,7 +21,7 @@ View getPlayerCoordinatesForView(float x, float y,int typeOfCam)
 		view.setCenter(tempX, tempY);
 		return view;
 		break;
-	case split_c:
+	case splitCamera:
 		if (x < 200)tempX = 200;
 		if (x > 1360) tempX = 1365;
 		if (y < 300)tempY = 300;
