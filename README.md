@@ -1,7 +1,7 @@
 # Football (Lab№2 & Lab№3)
 ###### 2022 C++
 **Лабораторна робота, ПІ-21, Phonovskiy Evgeniy.**
-## Tasks that were completed in this project
+## Tasks that were completed in this project:
 1. Added sfml framework
 2. Have used graphic engine
 3. Added map & characters/sprites 
