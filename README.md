@@ -11,3 +11,10 @@
 6. Added basic AI (PVE mode)
 7. Added double-screed mode (PVP mode)
 8. Added sounds & music
+## A few words about SFML:
+SFML it's a simple interface to the various components of your PC, to ease the development of games and multimedia applications. 
+It's easy to make a few simple games or applications with SFML, but it also takes a lot of time. Because you need to make a lot of things that SFML doesn't have.
+SFML contains different tools for making different things: audio, network, graphics and etc.
+But in my opinion these tools are very weak. Often you need to fix a lot of bugs, 'cause SFML and also make a lot of things by yourself.
+Also SFML hasn't had updates for a couple of years now and i don't there will be any.
+And finally, I want to say that SFML is great, but also an outdated framework, that is, SFML is good for learning, but for real tasks it is terrible.
